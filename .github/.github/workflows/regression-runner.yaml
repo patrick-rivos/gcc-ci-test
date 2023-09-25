@@ -56,27 +56,36 @@ jobs:
 
       - uses: actions/checkout@v3
 
+      - name: Initialize riscv-gnu-toolchain
+        run: |
+          git submodule update --init riscv-gnu-toolchain
+          cd riscv-gnu-toolchain && git checkout build-frequent
+
       - name: Restore submodules from cache
         uses: actions/download-artifact@v3
         with:
           name: gcc-sources-${{ inputs.gcchash }}
 
       - name: Restore submodules
+        working-directory: ./riscv-gnu-toolchain
         run: |
           rm -rf .git binutils dejagnu gcc gdb glibc newlib qemu
-          unzip cache.zip
-          rm -rf cache.zip
+          unzip ../cache.zip
+          rm -rf ../cache.zip
 
       - name: Checkout gcc hash
+        working-directory: ./riscv-gnu-toolchain
         run: |
           cd gcc
           git fetch
           git checkout ${{ inputs.gcchash }}
 
       - name: Install dependencies
+        working-directory: ./riscv-gnu-toolchain
         run: sudo ./.github/setup-apt.sh
 
       - name: Configure
+        working-directory: ./riscv-gnu-toolchain
         run: |
           mkdir build
           cd build
@@ -88,15 +97,18 @@ jobs:
           fi
 
       - name: Make gcc
+        working-directory: ./riscv-gnu-toolchain
         run: |
           cd build
           make -j $(nproc) ${{ inputs.mode }}
 
       - name: Remove sources to reclaim disk space
+        working-directory: ./riscv-gnu-toolchain
         run: |
           rm -rf .git binutils dejagnu gcc gdb glibc newlib qemu
 
       - name: Zip binaries
+        working-directory: ./riscv-gnu-toolchain
         run: |
           zip -r gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}.zip build/bin
 
@@ -105,11 +117,12 @@ jobs:
         with:
           name: gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}
           path: |
-            gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}.zip
+            riscv-gnu-toolchain/gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}.zip
           retention-days: 5
 
       # Running testsuite (stamps/check-gcc-*) only uses stage2 & assorted folders
       - name: Zip stage2
+        working-directory: ./riscv-gnu-toolchain
         run: |
           zip --symlinks -r stage2.zip build
 
@@ -118,10 +131,11 @@ jobs:
         with:
           name: gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-stage2
           path: |
-            stage2.zip
+            riscv-gnu-toolchain/stage2.zip
           retention-days: 5
 
       - name: Output success
+        working-directory: ./riscv-gnu-toolchain
         id: build-success
         run: |
           export BUILD_SUCCESS="success"
@@ -149,27 +163,36 @@ jobs:
 
       - uses: actions/checkout@v3
 
+      - name: Initialize riscv-gnu-toolchain
+        run: |
+          git submodule update --init riscv-gnu-toolchain
+          cd riscv-gnu-toolchain && git checkout build-frequent
+
       - name: Restore submodules from cache
         uses: actions/download-artifact@v3
         with:
           name: gcc-sources-${{ inputs.gcchash }}
 
       - name: Restore submodules
+        working-directory: ./riscv-gnu-toolchain
         run: |
           rm -rf .git binutils dejagnu gcc gdb glibc newlib qemu
-          unzip cache.zip
-          rm -rf cache.zip
+          unzip ../cache.zip
+          rm -rf ../cache.zip
 
       - name: Checkout gcc hash
+        working-directory: ./riscv-gnu-toolchain
         run: |
           cd gcc
           git fetch
           git checkout ${{ inputs.gcchash }}
 
       - name: Install dependencies
+        working-directory: ./riscv-gnu-toolchain
         run: sudo ./.github/setup-apt.sh
 
       - name: Configure
+        working-directory: ./riscv-gnu-toolchain
         run: |
           mkdir build
           cd build
@@ -186,13 +209,15 @@ jobs:
           name: gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-stage2
 
       - name: Unzip artifacts
+        working-directory: ./riscv-gnu-toolchain
         run: |
-          unzip -n stage2.zip
-          rm -rf stage2.zip
+          unzip -n ../stage2.zip
+          rm -rf ../stage2.zip
 
       # We need to use future timestamps since some stamps are generated during build process and invalidate the stamps here.
       # Future timestamps prevent that invalidation.
       - name: Generate fake stamps to prevent rebuilding
+        working-directory: ./riscv-gnu-toolchain
         run: |
           mkdir -p build/stamps
           cd build/stamps
@@ -222,22 +247,26 @@ jobs:
 
       # Checks that the cache has been properly setup (make doesn't try rebuilding)
       - name: Build sanity check (should be instant)
+        working-directory: ./riscv-gnu-toolchain
         run: |
           cd build
           make -d ${{ inputs.mode }}
 
       - name: Reinstall stage2
+        working-directory: ./riscv-gnu-toolchain
         run: |
           cd build
           cd build-gcc-${{ inputs.mode }}-stage2
           make install
 
       - name: Run testsuite
+        working-directory: ./riscv-gnu-toolchain
         run: |
           cd build
           make -j $(nproc) report-${{ inputs.mode }} || true
 
       - name: Build debug log zip
+        working-directory: ./riscv-gnu-toolchain
         run: |
           if [ "${{ inputs.mode }}" == "newlib" ]; then
             cat `find build/build-gcc-newlib-stage2/gcc/testsuite/ -name g*.log` > gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-debug-output.log
@@ -251,10 +280,11 @@ jobs:
         with:
           name: gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-debug-output.log
           path: |
-            gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-debug-output.log
+            riscv-gnu-toolchain/gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-debug-output.log
           retention-days: 90
 
       - name: Save results
+        working-directory: ./riscv-gnu-toolchain
         run: |
           if [ "${{ inputs.mode }}" == "newlib" ]; then
             PARSE_EXISTING_REPORT="./scripts/testsuite-filter gcc newlib test/allowlist `find build/build-gcc-newlib-stage2/gcc/testsuite/ -name *.sum |paste -sd "," -`"
@@ -268,7 +298,7 @@ jobs:
         with:
           name: gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-report.log
           path: |
-            gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-report.log
+            riscv-gnu-toolchain/gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-report.log
           retention-days: 90
 
   # The self-hosted environment does not have the same path setup as the hosted runners
@@ -283,30 +313,39 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Initialize riscv-gnu-toolchain
+        run: |
+          git submodule update --init riscv-gnu-toolchain
+          cd riscv-gnu-toolchain && git checkout build-frequent
+
       - name: Restore submodules from cache
         uses: actions/download-artifact@v3
         with:
           name: gcc-sources-${{ inputs.gcchash }}
 
       - name: Restore submodules
+        working-directory: ./riscv-gnu-toolchain
         run: |
           rm -rf .git binutils dejagnu gcc gdb glibc newlib qemu
-          unzip cache.zip
-          rm -rf cache.zip
+          unzip ../cache.zip
+          rm -rf ../cache.zip
 
       - name: Checkout gcc hash
+        working-directory: ./riscv-gnu-toolchain
         run: |
           cd gcc
           git fetch
           git checkout ${{ inputs.gcchash }}
 
       - name: Install dependencies
+        working-directory: ./riscv-gnu-toolchain
         run: |
           sudo ./.github/setup-apt.sh
           sudo apt install python3 -y
           sudo apt install python-is-python3 -y
 
       - name: Configure
+        working-directory: ./riscv-gnu-toolchain
         run: |
           mkdir build
           cd build
@@ -318,16 +357,19 @@ jobs:
           fi
 
       - name: Build
+        working-directory: ./riscv-gnu-toolchain
         run: |
           cd build
           make ${{ inputs.mode }} -j $(nproc)
 
       - name: Run testsuite
+        working-directory: ./riscv-gnu-toolchain
         run: |
           cd build
           make -j $(nproc) report-${{ inputs.mode }} || true
 
       - name: Build debug log zip
+        working-directory: ./riscv-gnu-toolchain
         run: |
           if [ "${{ inputs.mode }}" == "newlib" ]; then
             cat `find build/build-gcc-newlib-stage2/gcc/testsuite/ -name g*.log` > gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-debug-output.log
@@ -341,10 +383,11 @@ jobs:
         with:
           name: gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-debug-output.log
           path: |
-            gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-debug-output.log
+            riscv-gnu-toolchain/gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-debug-output.log
           retention-days: 90
 
       - name: Save results
+        working-directory: ./riscv-gnu-toolchain
         run: |
           if [ "${{ inputs.mode }}" == "newlib" ]; then
             PARSE_EXISTING_REPORT="./scripts/testsuite-filter gcc newlib test/allowlist `find build/build-gcc-newlib-stage2/gcc/testsuite/ -name *.sum |paste -sd "," -`"
@@ -358,7 +401,7 @@ jobs:
         with:
           name: gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-report.log
           path: |
-            gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-report.log
+            riscv-gnu-toolchain/gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-report.log
           retention-days: 90
 
   # The self-hosted environment does not have the same path setup as the hosted runners
@@ -373,30 +416,39 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Initialize riscv-gnu-toolchain
+        run: |
+          git submodule update --init riscv-gnu-toolchain
+          cd riscv-gnu-toolchain && git checkout build-frequent
+
       - name: Restore submodules from cache
         uses: actions/download-artifact@v3
         with:
           name: gcc-sources-${{ inputs.gcchash }}
 
       - name: Restore submodules
+        working-directory: ./riscv-gnu-toolchain
         run: |
           rm -rf .git binutils dejagnu gcc gdb glibc newlib qemu
-          unzip cache.zip
-          rm -rf cache.zip
+          unzip ../cache.zip
+          rm -rf ../cache.zip
 
       - name: Checkout gcc hash
+        working-directory: ./riscv-gnu-toolchain
         run: |
           cd gcc
           git fetch
           git checkout ${{ inputs.gcchash }}
 
       - name: Install dependencies
+        working-directory: ./riscv-gnu-toolchain
         run: |
           sudo ./.github/setup-apt.sh
           sudo apt install python3 -y
           sudo apt install python-is-python3 -y
 
       - name: Configure
+        working-directory: ./riscv-gnu-toolchain
         run: |
           mkdir build
           cd build
@@ -408,11 +460,13 @@ jobs:
           fi
 
       - name: Build
+        working-directory: ./riscv-gnu-toolchain
         run: |
           cd build
           make ${{ inputs.mode }} -j $(nproc)
 
       - name: Zip binaries
+        working-directory: ./riscv-gnu-toolchain
         run: |
           zip -r gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}.zip build/bin
 
@@ -421,15 +475,17 @@ jobs:
         with:
           name: gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}
           path: |
-            gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}.zip
+            riscv-gnu-toolchain/gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}.zip
           retention-days: 5
 
       - name: Run testsuite
+        working-directory: ./riscv-gnu-toolchain
         run: |
           cd build
           make -j $(nproc) report-${{ inputs.mode }} || true
 
       - name: Build debug log zip
+        working-directory: ./riscv-gnu-toolchain
         run: |
           if [ "${{ inputs.mode }}" == "newlib" ]; then
             cat `find build/build-gcc-newlib-stage2/gcc/testsuite/ -name g*.log` > gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-debug-output.log
@@ -443,10 +499,11 @@ jobs:
         with:
           name: gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-debug-output.log
           path: |
-            gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-debug-output.log
+            riscv-gnu-toolchain/gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-debug-output.log
           retention-days: 90
 
       - name: Save results
+        working-directory: ./riscv-gnu-toolchain
         run: |
           if [ "${{ inputs.mode }}" == "newlib" ]; then
             PARSE_EXISTING_REPORT="./scripts/testsuite-filter gcc newlib test/allowlist `find build/build-gcc-newlib-stage2/gcc/testsuite/ -name *.sum |paste -sd "," -`"
@@ -460,5 +517,5 @@ jobs:
         with:
           name: gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-report.log
           path: |
-            gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-report.log
+            riscv-gnu-toolchain/gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-report.log
           retention-days: 90

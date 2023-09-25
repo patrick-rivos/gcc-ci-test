@@ -6,8 +6,9 @@ on:
     - cron: 32 10 * * 6
   workflow_dispatch:
     branches:
-      - build-frequent
+      - main
 
+# TODO
 jobs:
   init-submodules:
     runs-on: ubuntu-20.04
