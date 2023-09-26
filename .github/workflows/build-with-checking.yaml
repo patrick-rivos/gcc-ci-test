@@ -41,6 +41,7 @@ jobs:
     runs-on: ubuntu-20.04
     environment: production
     container: ubuntu:22.04
+
     needs: [check]
 
     if: ${{ needs.check.outputs.early_exit != 'exit' }}
@@ -49,8 +50,8 @@ jobs:
         run: |
           echo "-- Before --"
           df -h
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
+          rm -rf /usr/share/dotnet
+          rm -rf /usr/local/lib/android
           echo "-- After --"
           df -h
 
@@ -81,7 +82,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./riscv-gnu-toolchain
-        run: sudo ./.github/setup-apt.sh
+        run: ./.github/setup-apt.sh
 
       - name: Configure
         working-directory: ./riscv-gnu-toolchain
