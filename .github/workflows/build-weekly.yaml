@@ -8,13 +8,19 @@ on:
     branches:
       - main
 
-# TODO
 jobs:
   init-submodules:
     runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Get riscv-gnu-toolchain hash
+        id: riscv_gnu_toolchain_hash
+        run: |
+          export HASH=$(git rev-parse HEAD:riscv-gnu-toolchain)
+          echo $HASH
+          echo "riscv_gnu_toolchain_hash=$HASH" >> "$GITHUB_OUTPUT"
 
       - name: Retrieve cache
         id: retrieve-cache
@@ -34,6 +40,9 @@ jobs:
       - name: Initalize submodules cache
         if: steps.retrieve-cache.outputs.cache-hit != 'true'
         run: |
+          git clone https://github.com/patrick-rivos/riscv-gnu-toolchain.git
+          cd riscv-gnu-toolchain
+          git checkout ${{ steps.riscv_gnu_toolchain_hash.outputs.riscv_gnu_toolchain_hash }}
           git submodule update --init --recursive --depth 1 binutils
           git submodule update --init --recursive --depth 1 dejagnu
           git submodule update --init --recursive --depth 1 gdb
@@ -89,8 +98,10 @@ jobs:
 
     outputs:
       gcchash: ${{ steps.gcc-hash.outputs.gcchash }}
+      riscv_gnu_toolchain_hash: ${{ steps.riscv_gnu_toolchain_hash.outputs.riscv_gnu_toolchain_hash }}
 
   build-with-checking:
+    runs-on: ubuntu-20.04
     needs: [init-submodules]
     strategy:
       fail-fast: false
@@ -106,9 +117,12 @@ jobs:
           rv32gcv-ilp32d,
           rv64gcv-lp64d,
         ]
-    uses: ./.github/workflows/build-with-checking.yaml
-    with:
-      mode: ${{ matrix.mode }}
-      target: ${{ matrix.target }}
-      gcchash: ${{ needs.init-submodules.outputs.gcchash }}
-      multitarget: ${{ github.event.inputs.multi_target }}
+    steps:
+      - name: Build
+        uses: ./.github/actions/build-with-checking
+        with:
+          mode: ${{ matrix.mode }}
+          target: ${{ matrix.target }}
+          gcchash: ${{ needs.init-submodules.outputs.gcchash }}
+          multitarget: ${{ github.event.inputs.multi_target }}
+          riscv_gnu_toolchain_hash: ${{ needs.init-submodules.outputs.riscv_gnu_toolchain_hash }}
