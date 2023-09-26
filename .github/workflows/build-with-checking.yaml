@@ -1,4 +1,4 @@
-name: "Build with checking"
+name: "Build with rtl checking"
 
 # Nightly support: True
 # Patchworks support: False
@@ -37,11 +37,14 @@ jobs:
     outputs:
       early_exit: ${{ steps.early-exit.outputs.early_exit }}
 
+
   build-with-checking:
     runs-on: ubuntu-20.04
     environment: production
     # container: ubuntu:22.04 # This adds too much overhead and causes the builds to timeout
-
+    defaults:
+      run:
+        working-directory: riscv-gnu-toolchain
     needs: [check]
 
     if: ${{ needs.check.outputs.early_exit != 'exit' }}
@@ -56,6 +59,7 @@ jobs:
           df -h
 
       - name: Initialize riscv-gnu-toolchain
+        working-directory: /
         run: |
           git clone https://github.com/patrick-rivos/riscv-gnu-toolchain.git
           cd riscv-gnu-toolchain && git checkout ${{ inputs.riscv_gnu_toolchain_hash }}
@@ -67,25 +71,20 @@ jobs:
           path: riscv-gnu-toolchain
 
       - name: Restore submodules
-        working-directory: ./riscv-gnu-toolchain
         run: |
           rm -rf .git binutils dejagnu gcc gdb glibc newlib qemu
           unzip cache.zip
           rm -rf cache.zip
 
-      - name: Checkout gcc hash
-        working-directory: ./riscv-gnu-toolchain
+      - name: Print gcc hash
         run: |
           cd gcc
-          git fetch
-          git checkout ${{ inputs.gcchash }}
+          git rev-parse HEAD
 
       - name: Install dependencies
-        working-directory: ./riscv-gnu-toolchain
         run: sudo ./.github/setup-apt.sh
 
       - name: Configure
-        working-directory: ./riscv-gnu-toolchain
         run: |
           mkdir build
           cd build
@@ -93,18 +92,15 @@ jobs:
           ../configure --prefix=$(pwd) --with-arch=${TARGET_TUPLE[0]} --with-abi=${TARGET_TUPLE[1]} --enable-gcc-checking=all
 
       - name: Make gcc
-        working-directory: ./riscv-gnu-toolchain
         run: |
           cd build
           make -j $(nproc) ${{ inputs.mode }}
 
       - name: Remove sources to reclaim disk space
-        working-directory: ./riscv-gnu-toolchain
         run: |
           rm -rf .git binutils dejagnu gcc gdb glibc newlib qemu
 
       - name: Zip binaries
-        working-directory: ./riscv-gnu-toolchain
         run: |
           zip -r gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-rtl-checking.zip build/bin
 

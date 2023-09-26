@@ -14,11 +14,15 @@ on:
 jobs:
   init-submodules:
     runs-on: ubuntu-20.04
+    defaults:
+      run:
+        working-directory: riscv-gnu-toolchain
 
     steps:
       - uses: actions/checkout@v3
 
       - name: Get riscv-gnu-toolchain hash
+        working-directory: /
         id: riscv_gnu_toolchain_hash
         run: |
           export HASH=$(git rev-parse HEAD:riscv-gnu-toolchain)
@@ -26,6 +30,7 @@ jobs:
           echo "riscv_gnu_toolchain_hash=$HASH" >> "$GITHUB_OUTPUT"
 
       - name: Clone riscv-gnu-toolchain
+        working-directory: /
         run: |
           git clone https://github.com/patrick-rivos/riscv-gnu-toolchain.git
           cd riscv-gnu-toolchain
@@ -47,7 +52,6 @@ jobs:
 
       - name: Initalize submodules cache
         if: steps.retrieve-cache.outputs.cache-hit != 'true'
-        working-directory: riscv-gnu-toolchain
         run: |
           git submodule update --init --recursive --depth 1 binutils
           git submodule update --init --recursive --depth 1 dejagnu
@@ -87,7 +91,6 @@ jobs:
           key: submodules-archive-3
 
       - name: Make cache zip
-        working-directory: riscv-gnu-toolchain
         run: |
           zip -r cache.zip .git binutils dejagnu gcc gdb glibc newlib qemu
 
