@@ -10,98 +10,9 @@ on:
 
 jobs:
   init-submodules:
-    runs-on: ubuntu-20.04
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Get riscv-gnu-toolchain hash
-        id: riscv_gnu_toolchain_hash
-        run: |
-          export HASH=$(git rev-parse HEAD:riscv-gnu-toolchain)
-          echo $HASH
-          echo "riscv_gnu_toolchain_hash=$HASH" >> "$GITHUB_OUTPUT"
-
-      - name: Retrieve cache
-        id: retrieve-cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            .git
-            binutils
-            dejagnu
-            gcc
-            gdb
-            glibc
-            newlib
-            qemu
-          key: submodules-archive-2 # Numbered archive to allow for easy transition when bumping submodules
-
-      - name: Initalize submodules cache
-        if: steps.retrieve-cache.outputs.cache-hit != 'true'
-        run: |
-          git clone https://github.com/patrick-rivos/riscv-gnu-toolchain.git
-          cd riscv-gnu-toolchain
-          git checkout ${{ steps.riscv_gnu_toolchain_hash.outputs.riscv_gnu_toolchain_hash }}
-          git submodule update --init --recursive --depth 1 binutils
-          git submodule update --init --recursive --depth 1 dejagnu
-          git submodule update --init --recursive --depth 1 gdb
-          git submodule update --init --recursive --depth 1 glibc
-          git submodule update --init --recursive --depth 1 newlib
-          git submodule update --init --recursive --depth 1 qemu
-          rm -rf gcc
-          git clone git://gcc.gnu.org/git/gcc.git
-
-      - name: Get GCC hash
-        id: gcc-hash
-        run: |
-          cd gcc
-          git checkout master
-          git pull
-          if [ "${{ github.event.inputs.gcchash }}" == "" ]; then
-            export GCCHASH=$(git rev-parse HEAD)
-          else
-            export GCCHASH=${{ github.event.inputs.gcchash }}
-          fi
-          echo $GCCHASH
-          echo "gcchash=$GCCHASH" >> "$GITHUB_OUTPUT"
-
-      - name: Cache submodules
-        if: steps.retrieve-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v3
-        with:
-          path: |
-            .git
-            binutils
-            dejagnu
-            gcc
-            gdb
-            glibc
-            newlib
-            qemu
-          key: submodules-archive-2
-
-      - name: Make cache zip
-        run: |
-          zip -r cache.zip .git binutils dejagnu gcc gdb glibc newlib qemu
-
-      # Use artifact rather than cache since cache downloads are flaky/hang.
-      # Artifacts are reliable but ~30 min slower to set up.
-      # Setup is done on one runner, so this isn't a show stopper.
-      - name: Upload git cache
-        uses: actions/upload-artifact@v3
-        with:
-          name: gcc-sources-${{ steps.gcc-hash.outputs.gcchash }}
-          path: |
-            cache.zip
-          retention-days: 5
-
-    outputs:
-      gcchash: ${{ steps.gcc-hash.outputs.gcchash }}
-      riscv_gnu_toolchain_hash: ${{ steps.riscv_gnu_toolchain_hash.outputs.riscv_gnu_toolchain_hash }}
+    uses: ./.github/common-workflows/init-submodules.yaml
 
   build-with-checking:
-    runs-on: ubuntu-20.04
     needs: [init-submodules]
     strategy:
       fail-fast: false
@@ -117,12 +28,10 @@ jobs:
           rv32gcv-ilp32d,
           rv64gcv-lp64d,
         ]
-    steps:
-      - name: Build
-        uses: ./.github/actions/build-with-checking
-        with:
-          mode: ${{ matrix.mode }}
-          target: ${{ matrix.target }}
-          gcchash: ${{ needs.init-submodules.outputs.gcchash }}
-          multitarget: ${{ github.event.inputs.multi_target }}
-          riscv_gnu_toolchain_hash: ${{ needs.init-submodules.outputs.riscv_gnu_toolchain_hash }}
+    uses: ./.github/common-workflows/build-with-checking.yaml
+    with:
+      mode: ${{ matrix.mode }}
+      target: ${{ matrix.target }}
+      gcchash: ${{ needs.init-submodules.outputs.gcchash }}
+      multitarget: ${{ github.event.inputs.multi_target }}
+      riscv_gnu_toolchain_hash: ${{ needs.init-submodules.outputs.riscv_gnu_toolchain_hash }}
