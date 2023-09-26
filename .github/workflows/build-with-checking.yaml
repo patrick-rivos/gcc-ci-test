@@ -55,10 +55,11 @@ jobs:
           echo "-- After --"
           df -h
 
-      - name: Install git
+      - name: Install git & unzip
         run: |
           apt update
           apt install git -y
+          apt install unzip -y
 
       - name: Initialize riscv-gnu-toolchain
         run: |
