@@ -1,4 +1,7 @@
-name: Regression-Runner
+name: "Build with checking"
+
+# Nightly support: True
+# Patchworks support: False
 
 on:
   workflow_call:
@@ -12,6 +15,9 @@ on:
       gcchash:
         required: true
         type: string
+      riscv_gnu_toolchain_hash:
+        required: true
+        type: string
       multitarget:
         required: false
         type: string
@@ -21,8 +27,6 @@ jobs:
     runs-on: ubuntu-20.04
     environment: production
     steps:
-      - uses: actions/checkout@v3
-
       - name: Early exit
         if: ${{ inputs.multitarget != '' && !contains(inputs.multitarget, format('{0}:{1}', inputs.mode, inputs.target)) }}
         id: early-exit
@@ -36,7 +40,9 @@ jobs:
   build-with-checking:
     runs-on: ubuntu-20.04
     environment: production
+    container: ubuntu/ubuntu:22.04
     needs: [check]
+
     if: ${{ needs.check.outputs.early_exit != 'exit' }}
     steps:
       - name: Remove unneeded frameworks to recover disk space
@@ -48,24 +54,23 @@ jobs:
           echo "-- After --"
           df -h
 
-      - uses: actions/checkout@v3
-
       - name: Initialize riscv-gnu-toolchain
         run: |
-          git submodule update --init riscv-gnu-toolchain
-          cd riscv-gnu-toolchain && git checkout build-frequent
+          git clone https://github.com/patrick-rivos/riscv-gnu-toolchain.git
+          cd riscv-gnu-toolchain && git checkout ${{ inputs.riscv_gnu_toolchain_hash }}
 
       - name: Restore submodules from cache
         uses: actions/download-artifact@v3
         with:
           name: gcc-sources-${{ inputs.gcchash }}
+          path: riscv-gnu-toolchain
 
       - name: Restore submodules
         working-directory: ./riscv-gnu-toolchain
         run: |
           rm -rf .git binutils dejagnu gcc gdb glibc newlib qemu
-          unzip ../cache.zip
-          rm -rf ../cache.zip
+          unzip cache.zip
+          rm -rf cache.zip
 
       - name: Checkout gcc hash
         working-directory: ./riscv-gnu-toolchain
@@ -100,12 +105,12 @@ jobs:
       - name: Zip binaries
         working-directory: ./riscv-gnu-toolchain
         run: |
-          zip -r gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}.zip build/bin
+          zip -r gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-rtl-checking.zip build/bin
 
       - name: Upload binary artifact
         uses: actions/upload-artifact@v3
         with:
-          name: gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}
+          name: gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-rtl-checking
           path: |
-            riscv-gnu-toolchain/gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}.zip
+            riscv-gnu-toolchain/gcc-${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.gcchash }}-${{ inputs.multilib }}-rtl-checking.zip
           retention-days: 5

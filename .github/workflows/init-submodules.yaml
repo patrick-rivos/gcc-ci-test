@@ -1,5 +1,4 @@
 name: "Intialize submodules"
-description: "Get the most recent gcc hash"
 
 # Nightly support: True
 # Patchworks support: False

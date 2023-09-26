@@ -10,7 +10,7 @@ on:
 
 jobs:
   init-submodules:
-    uses: ./.github/common-workflows/init-submodules.yaml
+    uses: ./.github/workflows/init-submodules.yaml
 
   build-with-checking:
     needs: [init-submodules]
@@ -28,7 +28,7 @@ jobs:
           rv32gcv-ilp32d,
           rv64gcv-lp64d,
         ]
-    uses: ./.github/common-workflows/build-with-checking.yaml
+    uses: ./.github/workflows/build-with-checking.yaml
     with:
       mode: ${{ matrix.mode }}
       target: ${{ matrix.target }}
