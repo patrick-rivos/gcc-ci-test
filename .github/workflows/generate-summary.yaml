@@ -42,7 +42,6 @@ jobs:
             riscv-gnu-toolchain/binutils
             riscv-gnu-toolchain/dejagnu
             riscv-gnu-toolchain/gcc
-            riscv-gnu-toolchain/gdb
             riscv-gnu-toolchain/glibc
             riscv-gnu-toolchain/newlib
             riscv-gnu-toolchain/qemu
@@ -293,7 +292,6 @@ jobs:
             binutils
             dejagnu
             gcc
-            gdb
             glibc
             musl
             newlib

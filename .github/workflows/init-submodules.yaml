@@ -48,14 +48,13 @@ jobs:
             riscv-gnu-toolchain/glibc
             riscv-gnu-toolchain/newlib
             riscv-gnu-toolchain/qemu
-          key: submodules-archive-3 # Numbered archive to allow for easy transition when bumping submodules
+          key: submodules-archive-4 # Numbered archive to allow for easy transition when bumping submodules
 
       - name: Initalize submodules cache
         if: steps.retrieve-cache.outputs.cache-hit != 'true'
         run: |
           git submodule update --init --recursive --depth 1 binutils
           git submodule update --init --recursive --depth 1 dejagnu
-          git submodule update --init --recursive --depth 1 gdb
           git submodule update --init --recursive --depth 1 glibc
           git submodule update --init --recursive --depth 1 newlib
           git submodule update --init --recursive --depth 1 qemu
@@ -88,11 +87,11 @@ jobs:
             riscv-gnu-toolchain/glibc
             riscv-gnu-toolchain/newlib
             riscv-gnu-toolchain/qemu
-          key: submodules-archive-3
+          key: submodules-archive-4
 
       - name: Make cache zip
         run: |
-          zip -r cache.zip .git binutils dejagnu gcc gdb glibc newlib qemu
+          zip -r cache.zip .git binutils dejagnu gcc glibc newlib qemu
 
       # Use artifact rather than cache since cache downloads are flaky/hang.
       # Artifacts are reliable but ~30 min slower to set up.

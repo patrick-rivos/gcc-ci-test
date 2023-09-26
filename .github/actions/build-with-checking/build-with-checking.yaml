@@ -63,7 +63,7 @@ jobs:
       - name: Restore submodules
         working-directory: ./riscv-gnu-toolchain
         run: |
-          rm -rf .git binutils dejagnu gcc gdb glibc newlib qemu
+          rm -rf .git binutils dejagnu gcc glibc newlib qemu
           unzip cache.zip
           rm -rf cache.zip
 
@@ -95,7 +95,7 @@ jobs:
       - name: Remove sources to reclaim disk space
         working-directory: ./riscv-gnu-toolchain
         run: |
-          rm -rf .git binutils dejagnu gcc gdb glibc newlib qemu
+          rm -rf .git binutils dejagnu gcc glibc newlib qemu
 
       - name: Zip binaries
         working-directory: ./riscv-gnu-toolchain

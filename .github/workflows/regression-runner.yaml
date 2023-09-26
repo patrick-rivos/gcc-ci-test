@@ -50,6 +50,7 @@ jobs:
     if: ${{ needs.check.outputs.early_exit != 'exit' && inputs.run_on_self_hosted != 'true' }}
     steps:
       - name: Remove unneeded frameworks to recover disk space
+        working-directory: ./
         run: |
           echo "-- Before --"
           df -h
@@ -150,6 +151,7 @@ jobs:
     if: ${{ needs.check.outputs.early_exit != 'exit' && inputs.run_on_self_hosted != 'true' }}
     steps:
       - name: Remove unneeded frameworks to recover disk space
+        working-directory: ./
         run: |
           echo "-- Before --"
           df -h
