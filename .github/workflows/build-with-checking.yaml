@@ -55,6 +55,11 @@ jobs:
           echo "-- After --"
           df -h
 
+      - name: Install git
+        run: |
+          apt update
+          apt install git -y
+
       - name: Initialize riscv-gnu-toolchain
         run: |
           git clone https://github.com/patrick-rivos/riscv-gnu-toolchain.git
