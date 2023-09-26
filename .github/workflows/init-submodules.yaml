@@ -20,27 +20,30 @@ jobs:
           echo $HASH
           echo "riscv_gnu_toolchain_hash=$HASH" >> "$GITHUB_OUTPUT"
 
+      - name: Clone riscv-gnu-toolchain
+        run: |
+          git clone https://github.com/patrick-rivos/riscv-gnu-toolchain.git
+          cd riscv-gnu-toolchain
+          git checkout ${{ steps.riscv_gnu_toolchain_hash.outputs.riscv_gnu_toolchain_hash }}
+
       - name: Retrieve cache
         id: retrieve-cache
         uses: actions/cache@v3
         with:
           path: |
-            .git
-            binutils
-            dejagnu
-            gcc
-            gdb
-            glibc
-            newlib
-            qemu
-          key: submodules-archive-2 # Numbered archive to allow for easy transition when bumping submodules
+            riscv-gnu-toolchain/.git
+            riscv-gnu-toolchain/binutils
+            riscv-gnu-toolchain/dejagnu
+            riscv-gnu-toolchain/gcc
+            riscv-gnu-toolchain/glibc
+            riscv-gnu-toolchain/newlib
+            riscv-gnu-toolchain/qemu
+          key: submodules-archive-3 # Numbered archive to allow for easy transition when bumping submodules
 
       - name: Initalize submodules cache
         if: steps.retrieve-cache.outputs.cache-hit != 'true'
+        working-directory: riscv-gnu-toolchain
         run: |
-          git clone https://github.com/patrick-rivos/riscv-gnu-toolchain.git
-          cd riscv-gnu-toolchain
-          git checkout ${{ steps.riscv_gnu_toolchain_hash.outputs.riscv_gnu_toolchain_hash }}
           git submodule update --init --recursive --depth 1 binutils
           git submodule update --init --recursive --depth 1 dejagnu
           git submodule update --init --recursive --depth 1 gdb
@@ -51,9 +54,9 @@ jobs:
           git clone git://gcc.gnu.org/git/gcc.git
 
       - name: Get GCC hash
+        working-directory: riscv-gnu-toolchain/gcc
         id: gcc-hash
         run: |
-          cd gcc
           git checkout master
           git pull
           if [ "${{ github.event.inputs.gcchash }}" == "" ]; then
@@ -69,15 +72,14 @@ jobs:
         uses: actions/cache/save@v3
         with:
           path: |
-            .git
-            binutils
-            dejagnu
-            gcc
-            gdb
-            glibc
-            newlib
-            qemu
-          key: submodules-archive-2
+            riscv-gnu-toolchain/.git
+            riscv-gnu-toolchain/binutils
+            riscv-gnu-toolchain/dejagnu
+            riscv-gnu-toolchain/gcc
+            riscv-gnu-toolchain/glibc
+            riscv-gnu-toolchain/newlib
+            riscv-gnu-toolchain/qemu
+          key: submodules-archive-3
 
       - name: Make cache zip
         run: |
