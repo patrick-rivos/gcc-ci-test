@@ -87,6 +87,7 @@ jobs:
           key: submodules-archive-3
 
       - name: Make cache zip
+        working-directory: riscv-gnu-toolchain
         run: |
           zip -r cache.zip .git binutils dejagnu gcc gdb glibc newlib qemu
 
