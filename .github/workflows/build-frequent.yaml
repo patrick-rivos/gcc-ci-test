@@ -23,92 +23,7 @@ on:
 
 jobs:
   init-submodules:
-    runs-on: ubuntu-20.04
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Initialize riscv-gnu-toolchain
-        run: |
-          git submodule update --init riscv-gnu-toolchain
-          cd riscv-gnu-toolchain && git checkout build-frequent
-
-      - name: Retrieve cache
-        id: retrieve-cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            riscv-gnu-toolchain/.git
-            riscv-gnu-toolchain/binutils
-            riscv-gnu-toolchain/dejagnu
-            riscv-gnu-toolchain/gcc
-            riscv-gnu-toolchain/gdb
-            riscv-gnu-toolchain/glibc
-            riscv-gnu-toolchain/newlib
-            riscv-gnu-toolchain/qemu
-          key: submodules-archive-2 # Numbered archive to allow for easy transition when bumping submodules
-
-      - name: Initalize submodules cache
-        if: steps.retrieve-cache.outputs.cache-hit != 'true'
-        working-directory: ./riscv-gnu-toolchain
-        run: |
-          git submodule update --init --recursive --depth 1 binutils
-          git submodule update --init --recursive --depth 1 dejagnu
-          git submodule update --init --recursive --depth 1 gdb
-          git submodule update --init --recursive --depth 1 glibc
-          git submodule update --init --recursive --depth 1 newlib
-          git submodule update --init --recursive --depth 1 qemu
-          rm -rf gcc
-          git clone git://gcc.gnu.org/git/gcc.git
-
-      - name: Get GCC hash
-        id: gcc-hash
-        working-directory: ./riscv-gnu-toolchain
-        run: |
-          cd gcc
-          git checkout master
-          git pull
-          if [ "${{ github.event.inputs.gcchash }}" == "" ]; then
-            export GCCHASH=$(git rev-parse HEAD)
-          else
-            export GCCHASH=${{ github.event.inputs.gcchash }}
-          fi
-          echo $GCCHASH
-          echo "gcchash=$GCCHASH" >> "$GITHUB_OUTPUT"
-
-      - name: Cache submodules
-        if: steps.retrieve-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v3
-        with:
-          path: |
-            riscv-gnu-toolchain/.git
-            riscv-gnu-toolchain/binutils
-            riscv-gnu-toolchain/dejagnu
-            riscv-gnu-toolchain/gcc
-            riscv-gnu-toolchain/gdb
-            riscv-gnu-toolchain/glibc
-            riscv-gnu-toolchain/newlib
-            riscv-gnu-toolchain/qemu
-          key: submodules-archive-2
-
-      - name: Make cache zip
-        working-directory: ./riscv-gnu-toolchain
-        run: |
-          zip -r cache.zip .git binutils dejagnu gcc gdb glibc newlib qemu
-
-      # Use artifact rather than cache since cache downloads are flaky/hang.
-      # Artifacts are reliable but ~30 min slower to set up.
-      # Setup is done on one runner, so this isn't a show stopper.
-      - name: Upload git cache
-        uses: actions/upload-artifact@v3
-        with:
-          name: gcc-sources-${{ steps.gcc-hash.outputs.gcchash }}
-          path: |
-            riscv-gnu-toolchain/cache.zip
-          retention-days: 5
-
-    outputs:
-      gcchash: ${{ steps.gcc-hash.outputs.gcchash }}
+    uses: ./.github/workflows/init-submodules.yaml
 
   creg: # Check Regressions. Short name so I can see the matrix string in github
     needs: [init-submodules]
@@ -134,6 +49,7 @@ jobs:
       gcchash: ${{ needs.init-submodules.outputs.gcchash }}
       multilib: ${{ matrix.multilib }}
       multitarget: ${{ github.event.inputs.multi_target }}
+      riscv_gnu_toolchain_hash: ${{ needs.init-submodules.outputs.riscv_gnu_toolchain_hash }}
       run_on_self_hosted: false
 
   cmreg: # Check Multilib Regressions. Short name so I can see the matrix string in github
@@ -151,6 +67,7 @@ jobs:
       gcchash: ${{ needs.init-submodules.outputs.gcchash }}
       multilib: ${{ matrix.multilib }}
       multitarget: ${{ github.event.inputs.multi_target }}
+      riscv_gnu_toolchain_hash: ${{ needs.init-submodules.outputs.riscv_gnu_toolchain_hash }}
       run_on_self_hosted: false
 
   cmreg-self-hosted: # Check Multilib Regressions. Short name so I can see the matrix string in github
@@ -168,6 +85,7 @@ jobs:
       gcchash: ${{ needs.init-submodules.outputs.gcchash }}
       multilib: ${{ matrix.multilib }}
       multitarget: ${{ github.event.inputs.multi_target }}
+      riscv_gnu_toolchain_hash: ${{ needs.init-submodules.outputs.riscv_gnu_toolchain_hash }}
       run_on_self_hosted: true
 
   build-x86:

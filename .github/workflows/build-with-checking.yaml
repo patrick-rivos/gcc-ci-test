@@ -46,7 +46,6 @@ jobs:
       run:
         working-directory: riscv-gnu-toolchain
     needs: [check]
-
     if: ${{ needs.check.outputs.early_exit != 'exit' }}
     steps:
       - name: Remove unneeded frameworks to recover disk space
@@ -59,7 +58,7 @@ jobs:
           df -h
 
       - name: Initialize riscv-gnu-toolchain
-        working-directory: /
+        working-directory: ./
         run: |
           git clone https://github.com/patrick-rivos/riscv-gnu-toolchain.git
           cd riscv-gnu-toolchain && git checkout ${{ inputs.riscv_gnu_toolchain_hash }}
@@ -72,7 +71,7 @@ jobs:
 
       - name: Restore submodules
         run: |
-          rm -rf .git binutils dejagnu gcc gdb glibc newlib qemu
+          rm -rf .git binutils dejagnu gcc glibc newlib qemu
           unzip cache.zip
           rm -rf cache.zip
 
@@ -98,7 +97,7 @@ jobs:
 
       - name: Remove sources to reclaim disk space
         run: |
-          rm -rf .git binutils dejagnu gcc gdb glibc newlib qemu
+          rm -rf .git binutils dejagnu gcc glibc newlib qemu
 
       - name: Zip binaries
         run: |
