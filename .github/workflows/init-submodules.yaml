@@ -99,7 +99,7 @@ jobs:
         with:
           name: gcc-sources-${{ steps.gcc-hash.outputs.gcchash }}
           path: |
-            cache.zip
+            riscv-gnu-toolchain/cache.zip
           retention-days: 5
 
     outputs:
