@@ -40,7 +40,7 @@ jobs:
   build-with-checking:
     runs-on: ubuntu-20.04
     environment: production
-    container: ubuntu/ubuntu:22.04
+    container: ubuntu:22.04
     needs: [check]
 
     if: ${{ needs.check.outputs.early_exit != 'exit' }}
