@@ -69,12 +69,13 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: gcc-sources-${{ inputs.gcchash }}
+          path: riscv-gnu-toolchain
 
       - name: Restore submodules
         run: |
-          rm -rf .git binutils dejagnu gcc glibc newlib qemu
-          unzip ../cache.zip
-          rm -rf ../cache.zip
+          rm -rf .git binutils dejagnu gcc gdb glibc newlib qemu
+          unzip cache.zip
+          rm -rf cache.zip
 
       - name: Print gcc hash
         run: |
@@ -103,7 +104,7 @@ jobs:
 
       - name: Remove sources to reclaim disk space
         run: |
-          rm -rf .git binutils dejagnu gcc glibc newlib qemu
+          rm -rf .git binutils dejagnu gcc gdb glibc newlib qemu
 
       - name: Zip binaries
         run: |
@@ -174,7 +175,7 @@ jobs:
 
       - name: Restore submodules
         run: |
-          rm -rf .git binutils dejagnu gcc glibc newlib qemu
+          rm -rf .git binutils dejagnu gcc gdb glibc newlib qemu
           unzip cache.zip
           rm -rf cache.zip
 
@@ -214,6 +215,7 @@ jobs:
           mkdir -p build/stamps
           cd build/stamps
           touch -d "+2 days" check-write-permission
+          touch -d "+2 days" build-gdb-${{ inputs.mode }}
           touch -d "+2 days" build-binutils-${{ inputs.mode }}
           touch -d "+2 days" build-linux-headers
           touch -d "+2 days" build-gcc-${{ inputs.mode }}-stage1
@@ -307,13 +309,13 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: gcc-sources-${{ inputs.gcchash }}
+          path: riscv-gnu-toolchain
 
       - name: Restore submodules
-        working-directory: ./riscv-gnu-toolchain
         run: |
-          rm -rf .git binutils dejagnu gcc glibc newlib qemu
-          unzip ../cache.zip
-          rm -rf ../cache.zip
+          rm -rf .git binutils dejagnu gcc gdb glibc newlib qemu
+          unzip cache.zip
+          rm -rf cache.zip
 
       - name: Print gcc hash
         run: |
@@ -404,10 +406,11 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: gcc-sources-${{ inputs.gcchash }}
+          path: riscv-gnu-toolchain
 
       - name: Restore submodules
         run: |
-          rm -rf .git binutils dejagnu gcc glibc newlib qemu
+          rm -rf .git binutils dejagnu gcc gdb glibc newlib qemu
           unzip cache.zip
           rm -rf cache.zip
 
