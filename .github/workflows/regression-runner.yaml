@@ -299,6 +299,11 @@ jobs:
     if: ${{ failure() && needs.build.outputs.build_success == 'success' && inputs.run_on_self_hosted != 'true' }}
     timeout-minutes: 1440 # 24 hours
     steps:
+      - name: Remove riscv-gnu-toolchain
+        working-directory: ./
+        run: |
+          rm -rf riscv-gnu-toolchain
+
       - name: Initialize riscv-gnu-toolchain
         working-directory: ./
         run: |
@@ -396,6 +401,11 @@ jobs:
     if: ${{ needs.check.outputs.early_exit != 'exit' && inputs.run_on_self_hosted == 'true' }}
     timeout-minutes: 1440 # 24 hours
     steps:
+      - name: Remove riscv-gnu-toolchain
+        working-directory: ./
+        run: |
+          rm -rf riscv-gnu-toolchain
+
       - name: Initialize riscv-gnu-toolchain
         working-directory: ./
         run: |
