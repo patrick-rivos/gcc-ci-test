@@ -295,6 +295,9 @@ jobs:
   rerun-timeouts:
     runs-on: self-hosted
     environment: production
+    defaults:
+      run:
+        working-directory: riscv-gnu-toolchain
     needs: [check, build, test]
     if: ${{ failure() && needs.build.outputs.build_success == 'success' && inputs.run_on_self_hosted != 'true' }}
     timeout-minutes: 1440 # 24 hours
