@@ -26,7 +26,7 @@ runs:
       shell: bash
       run: |
         pip install pygithub requests
-        python ./scripts/download_artifact.py -name ${{ inputs.report-artifact-name }} -repo kevinl-rivosinc/gcc-ci -token ${{ inputs.github-token }} -outdir ${{ inputs.path }}current_logs
+        python ./${{ inputs.path }}scripts/download_artifact.py -name ${{ inputs.report-artifact-name }} -repo kevinl-rivosinc/gcc-ci -token ${{ inputs.github-token }} -outdir ${{ inputs.path }}current_logs
       continue-on-error: true
 
     - name: Download rv32 non-multilib binary
@@ -41,5 +41,5 @@ runs:
       if: ${{ !cancelled() && hashFiles(format('./current_logs/{0}', inputs.report-artifact-name)) == '' && hashFiles(format('./temp/{0}', inputs.binary-artifact-name)) == '' }}
       shell: bash
       run: |
-        python ./scripts/download_artifact.py -name ${{ inputs.binary-artifact-name }} -repo kevinl-rivosinc/gcc-ci -token ${{ inputs.github-token }} -outdir ${{ inputs.path }}temp
+        python ./${{ inputs.path }}scripts/download_artifact.py -name ${{ inputs.binary-artifact-name }} -repo kevinl-rivosinc/gcc-ci -token ${{ inputs.github-token }} -outdir ${{ inputs.path }}temp
       continue-on-error: true
