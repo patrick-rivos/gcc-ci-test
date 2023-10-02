@@ -18,7 +18,7 @@ runs:
       uses: actions/download-artifact@v3
       with:
         name: ${{ inputs.report-artifact-name }}
-        path: ${{ format('./{0}current_logs', inputs.path)) }}
+        path: ${{ format('./{0}current_logs', inputs.path) }}
       continue-on-error: true
 
     - name: Download report from another workflow
@@ -34,7 +34,7 @@ runs:
       uses: actions/download-artifact@v3
       with:
         name: ${{ inputs.binary-artifact-name }}
-        path: ${{ format('./{0}temp', inputs.path)) }}
+        path: ${{ format('./{0}temp', inputs.path) }}
       continue-on-error: true
 
     - name: Download binary from another workflow
