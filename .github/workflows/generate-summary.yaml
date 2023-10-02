@@ -93,7 +93,6 @@ jobs:
         with:
           gcchash: ${{ inputs.gcchash }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          path: riscv-gnu-toolchain/ # Trailing backslash is needed.
 
       - name: Print API usage info
         run: |

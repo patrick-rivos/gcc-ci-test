@@ -7,8 +7,6 @@ inputs:
     required: true
   github-token:
     required: true
-  path:
-    required: false
 
 runs:
   using: "composite"
@@ -18,7 +16,7 @@ runs:
       uses: actions/download-artifact@v3
       with:
         name: ${{ inputs.report-artifact-name }}
-        path: ${{ format('./{0}current_logs', inputs.path) }}
+        path: ./riscv-gnu-toolchain/current_logs
       continue-on-error: true
 
     - name: Download report from another workflow
@@ -26,7 +24,8 @@ runs:
       shell: bash
       run: |
         pip install pygithub requests
-        python ./${{ inputs.path }}scripts/download_artifact.py -name ${{ inputs.report-artifact-name }} -repo kevinl-rivosinc/gcc-ci -token ${{ inputs.github-token }} -outdir ${{ inputs.path }}current_logs
+        cd riscv-gnu-toolchain
+        python ./scripts/download_artifact.py -name ${{ inputs.report-artifact-name }} -repo kevinl-rivosinc/gcc-ci -token ${{ inputs.github-token }} -outdir current_logs
       continue-on-error: true
 
     - name: Download rv32 non-multilib binary
@@ -34,12 +33,13 @@ runs:
       uses: actions/download-artifact@v3
       with:
         name: ${{ inputs.binary-artifact-name }}
-        path: ${{ format('./{0}temp', inputs.path) }}
+        path: ./riscv-gnu-toolchain/temp
       continue-on-error: true
 
     - name: Download binary from another workflow
       if: ${{ !cancelled() && hashFiles(format('./current_logs/{0}', inputs.report-artifact-name)) == '' && hashFiles(format('./temp/{0}', inputs.binary-artifact-name)) == '' }}
       shell: bash
       run: |
-        python ./${{ inputs.path }}scripts/download_artifact.py -name ${{ inputs.binary-artifact-name }} -repo kevinl-rivosinc/gcc-ci -token ${{ inputs.github-token }} -outdir ${{ inputs.path }}temp
+        cd riscv-gnu-toolchain
+        python ./scripts/download_artifact.py -name ${{ inputs.binary-artifact-name }} -repo kevinl-rivosinc/gcc-ci -token ${{ inputs.github-token }} -outdir temp
       continue-on-error: true
