@@ -25,10 +25,14 @@ jobs:
     if: always() # ensure comparison always runs even on error
     runs-on: ubuntu-20.04
     environment: production
+    defaults:
+      run:
+        working-directory: riscv-gnu-toolchain
     steps:
       - uses: actions/checkout@v3
 
       - name: Initialize riscv-gnu-toolchain
+        working-directory: ./
         run: |
           git submodule update --init riscv-gnu-toolchain
           cd riscv-gnu-toolchain && git checkout build-frequent
@@ -49,14 +53,12 @@ jobs:
           key: submodules-archive-5 # Numbered archive to allow for easy transition when bumping submodules
 
       - name: Initalize gcc
-        working-directory: ./riscv-gnu-toolchain
         if: steps.retrieve-cache.outputs.cache-hit != 'true'
         run: |
           rm -rf gcc
           git clone git://gcc.gnu.org/git/gcc.git
 
       - name: Pull gcc
-        working-directory: ./riscv-gnu-toolchain
         id: gcc-hash
         run: |
           cd gcc
@@ -64,7 +66,6 @@ jobs:
           git pull
 
       - name: Create directories
-        working-directory: ./riscv-gnu-toolchain
         run: |
           mkdir current_logs
           mkdir previous_logs
@@ -72,7 +73,6 @@ jobs:
           mkdir summaries
 
       - name: Bump pyopenssl and crypto
-        working-directory: ./riscv-gnu-toolchain
         run: |
           sudo apt remove python3-pip
           wget https://bootstrap.pypa.io/get-pip.py
@@ -82,7 +82,6 @@ jobs:
       # Download all workload artifacts
 
       - name: Print API usage info
-        working-directory: ./riscv-gnu-toolchain
         run: |
           curl \
             -H "Accept: application/vnd.github+json" \
@@ -94,6 +93,7 @@ jobs:
         with:
           gcchash: ${{ inputs.gcchash }}
           token: ${{ secrets.GITHUB_TOKEN }}
+          path: riscv-gnu-toolchain
 
       - name: Print API usage info
         run: |
@@ -110,19 +110,16 @@ jobs:
           ls current_logs
 
       - name: Download artifacts
-        working-directory: ./riscv-gnu-toolchain
         run: |
           pip install pygithub requests
           python ./scripts/download_artifacts.py -hash ${{ inputs.gcchash }} -repo kevinl-rivosinc/gcc-ci -token ${{ secrets.GITHUB_TOKEN }}
           ls previous_logs
 
       - name: Compare artifacts
-        working-directory: ./riscv-gnu-toolchain
         run: |
           python ./scripts/compare_all_artifacts.py -hash ${{ inputs.gcchash }}
 
       - name: Make artifact zips
-        working-directory: ./riscv-gnu-toolchain
         run: |
           zip -r summaries.zip summaries
           zip -r current_logs.zip current_logs
@@ -161,10 +158,14 @@ jobs:
     runs-on: ubuntu-20.04
     permissions:
       issues: write
+    defaults:
+      run:
+        working-directory: riscv-gnu-toolchain
     steps:
       - uses: actions/checkout@v3
 
       - name: Initialize riscv-gnu-toolchain
+        working-directory: ./
         run: |
           git submodule update --init riscv-gnu-toolchain
           cd riscv-gnu-toolchain && git checkout build-frequent
@@ -173,16 +174,19 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ${{ needs.compare-artifacts.outputs.gcchash }}-summaries
+          path: ./riscv-gnu-toolchain
 
       - name: Download current logs artifact
         uses: actions/download-artifact@v3
         with:
           name: ${{ needs.compare-artifacts.outputs.gcchash }}-current-logs
+          path: ./riscv-gnu-toolchain
 
       - name: Download previous logs artifact
         uses: actions/download-artifact@v3
         with:
           name: ${{ needs.compare-artifacts.outputs.gcchash }}-previous-logs
+          path: ./riscv-gnu-toolchain
 
       - name: Print API usage info
         run: |
@@ -191,14 +195,7 @@ jobs:
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             https://api.github.com/rate_limit
 
-      - name: Move artifacts
-        run: |
-          mv summaries.zip riscv-gnu-toolchain/summaries.zip
-          mv current_logs.zip riscv-gnu-toolchain/current_logs.zip
-          mv previous_logs.zip riscv-gnu-toolchain/previous_logs.zip
-
       - name: Aggregate information
-        working-directory: ./riscv-gnu-toolchain
         run: |
           unzip summaries.zip
           unzip current_logs.zip
@@ -216,7 +213,6 @@ jobs:
             https://api.github.com/rate_limit
 
       - name: Trim issue length # reduce the number of lines in final issue so github always creates issue
-        working-directory: ./riscv-gnu-toolchain
         run: |
           head -c 65000 issue.md > trimmed_issue.md
           if [ $(cat trimmed_issue.md | wc -l) -ne $(cat issue.md | wc -l) ]; then echo "\n\`\`\`\nIssue text has been trimmed. Please check logs for the untrimmed issue." >> trimmed_issue.md; fi
@@ -231,12 +227,6 @@ jobs:
         with:
           filename: riscv-gnu-toolchain/trimmed_issue.md
           update_existing: true
-
-      - name: UNIMPLEMENTED - Associate issue with project # Only scheduled jobs are guarenteed to track trunk.
-        if: ${{ github.event_name == 'schedule' }}
-        run: |
-          echo "Do nothing for now. Most github actions only work with classic projects."
-          echo "We'll likely need to use the API to implement this"
 
     outputs:
       new_issue_num: ${{ steps.create-issue.outputs.number }}
@@ -305,7 +295,6 @@ jobs:
             riscv-gnu-toolchain/newlib
             riscv-gnu-toolchain/qemu
           key: submodules-archive-5 # Numbered archive to allow for easy transition when bumping submodules
-
 
       - name: Initalize gcc
         if: steps.retrieve-cache.outputs.cache-hit != 'true'
