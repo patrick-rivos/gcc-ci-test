@@ -81,6 +81,8 @@ jobs:
   lint:
     needs: [download_patches]
     uses: ./.github/workflows/lint.yaml
+    permissions:
+      issues: write
     with:
       patch_name: ${{ inputs.patch_name }}
       riscv_gnu_toolchain_hash: ${{ inputs.riscv_gnu_toolchain_hash }}

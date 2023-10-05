@@ -101,6 +101,8 @@ jobs:
       matrix:
         patch_name: ${{ fromJSON(needs.fetch_patches.outputs.list_of_patch_names) }}
     uses: ./.github/workflows/run_checks.yaml
+    permissions:
+      issues: write
     with:
       patch_name: ${{ matrix.patch_name }}
       gcchash: ${{ needs.needs.init-submodules.outputs.gcchash }}
