@@ -78,7 +78,7 @@ jobs:
         with:
           name: patch_urls
           path: |
-            patch_files.zip
+            riscv-gnu-toolchain/patch_files.zip
           retention-days: 90
 
       - name: Upload patchworks urls zip
@@ -87,7 +87,7 @@ jobs:
         with:
           name: patchworks_urls
           path: |
-            patchworks_files.zip
+            riscv-gnu-toolchain/patchworks_files.zip
           retention-days: 90
 
     outputs:
