@@ -15,6 +15,7 @@ runs:
         shell: bash
         working-directory: ./
         run: |
+          rm -rf riscv-gnu-toolchain
           git clone https://github.com/ewlu/riscv-gnu-toolchain.git
           cd riscv-gnu-toolchain && git checkout ${{ inputs.riscv_gnu_toolchain_hash }}
 
