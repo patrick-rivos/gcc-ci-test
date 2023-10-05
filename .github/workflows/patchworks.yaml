@@ -95,6 +95,7 @@ jobs:
 
   init-submodules:
     needs: [fetch_patches]
+    if: ${{ needs.fetch_patches.outputs.list_of_patch_names != '[]' }}
     uses: ./.github/workflows/init-submodules.yaml
 
   patch_matrix:
