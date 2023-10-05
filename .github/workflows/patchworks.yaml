@@ -108,5 +108,5 @@ jobs:
       issues: write
     with:
       patch_name: ${{ matrix.patch_name }}
-      gcchash: ${{ needs.needs.init-submodules.outputs.gcchash }}
+      gcchash: ${{ needs.init-submodules.outputs.gcchash }}
       riscv_gnu_toolchain_hash: ${{ needs.init-submodules.outputs.riscv_gnu_toolchain_hash }}
