@@ -18,6 +18,9 @@ on:
       tot_hash:
         required: true
         type: string
+      riscv_gnu_toolchain_hash:
+        required: true
+        type: string
   workflow_dispatch:
     branches:
       - patchworks-ci
