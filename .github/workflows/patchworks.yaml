@@ -24,6 +24,8 @@ jobs:
       run:
         working-directory: riscv-gnu-toolchain
     steps:
+      - uses: actions/checkout@v3
+
       - name: Setup env
         uses: ./.github/actions/setup-env
         with:
@@ -92,6 +94,7 @@ jobs:
       list_of_patch_names: ${{ steps.list_patches.outputs.patch_list }}
 
   init-submodules:
+    needs: [fetch_patches]
     uses: ./.github/workflows/init-submodules.yaml
 
   patch_matrix:

@@ -390,6 +390,8 @@ jobs:
       run:
         working-directory: riscv-gnu-toolchain
     steps:
+      - uses: actions/checkout@v3
+
       - name: Setup env
         uses: ./.github/actions/setup-env
         with:
@@ -505,6 +507,8 @@ jobs:
       run:
         working-directory: riscv-gnu-toolchain
     steps:
+      - uses: actions/checkout@v3
+
       - name: Setup env
         uses: ./.github/actions/setup-env
         with:

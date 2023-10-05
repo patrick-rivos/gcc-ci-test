@@ -32,7 +32,7 @@ jobs:
       - name: Clone riscv-gnu-toolchain
         working-directory: ./
         run: |
-          git clone https://github.com/patrick-rivos/gcc-postcommit-ci.git
+          git clone https://github.com/ewlu/riscv-gnu-toolchain.git
           cd riscv-gnu-toolchain
           git checkout ${{ steps.riscv_gnu_toolchain_hash.outputs.riscv_gnu_toolchain_hash }}
 
