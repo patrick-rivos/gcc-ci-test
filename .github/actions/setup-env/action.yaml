@@ -12,12 +12,14 @@ runs:
   using: "composite"
   steps:
       - name: Initialize riscv-gnu-toolchain
+        shell: bash
         working-directory: ./
         run: |
           git clone https://github.com/ewlu/riscv-gnu-toolchain.git
           cd riscv-gnu-toolchain && git checkout ${{ inputs.riscv_gnu_toolchain_hash }}
 
       - name: Remove unneeded frameworks to recover disk space
+        shell: bash
         if: inputs.free_up_space == 'true'
         run: |
           echo "-- Before --"
