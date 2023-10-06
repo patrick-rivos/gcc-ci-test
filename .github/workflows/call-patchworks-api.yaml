@@ -86,7 +86,7 @@ jobs:
 
       - name: Report pass
         run: |
-          python scripts/post_check_to_patchworks.py -pid ${{ needs.get-patch-info.outputs.patch_id }} -desc 'testsuite success' -iid ${{ github.event.issue.number }} -state 'success' -context 'testing'
+          python scripts/post_check_to_patchworks.py -pid ${{ needs.get-patch-info.outputs.patch_id }} -desc 'testsuite success' -iid ${{ github.event.issue.number }} -state 'success' -context 'testing' -token 'PLACEHOLDER'
 
 
   report-warn:
@@ -116,7 +116,7 @@ jobs:
 
       - name: Report Warning
         run: |
-          python scripts/post_check_to_patchworks.py -pid ${{ needs.get-patch-info.outputs.patch_id }} -desc 'testsuite warning' -iid ${{ github.event.issue.number }} -state 'warning' -context 'testing'
+          python scripts/post_check_to_patchworks.py -pid ${{ needs.get-patch-info.outputs.patch_id }} -desc 'testsuite warning' -iid ${{ github.event.issue.number }} -state 'warning' -context 'testing' -token 'PLACEHOLDER'
 
 
   report-error:
@@ -146,5 +146,5 @@ jobs:
 
       - name: Report Error
         run: |
-          python scripts/post_check_to_patchworks.py -pid ${{ needs.get-patch-info.outputs.patch_id }} -desc 'testsuite fail' -iid ${{ github.event.issue.number }} -state 'fail' -context 'testing'
+          python scripts/post_check_to_patchworks.py -pid ${{ needs.get-patch-info.outputs.patch_id }} -desc 'testsuite fail' -iid ${{ github.event.issue.number }} -state 'fail' -context 'testing' -token 'PLACEHOLDER'
 
