@@ -96,7 +96,7 @@ jobs:
 
       - name: Update pending issue
         run: |
-          python scripts/update_issue_status.py -token ${{ secrets.GITHUB_TOKEN }} -state pending -patch ${{ inputs.patch_name }} -target ${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.multilib }} -check 'Build GCC'
+          python scripts/update_issue_status.py -token ${{ secrets.GITHUB_TOKEN }} -state pending -patch ${{ inputs.patch_name }} -target ${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.multilib }} -check 'Build GCC' -repo kevinl-rivosinc/gcc-ci
           echo "Associated run is: https://github.com/kevinl-rivosinc/gcc-ci/actions/runs/${{ github.run_id }}" >> issue.md
 
       - name: Create build report issue
@@ -133,7 +133,7 @@ jobs:
 
       - name: Build success report
         run: |
-          python scripts/update_issue_status.py -token ${{ secrets.GITHUB_TOKEN }} -state success -patch ${{ inputs.patch_name }} -target ${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.multilib }} -check 'Build GCC'
+          python scripts/update_issue_status.py -token ${{ secrets.GITHUB_TOKEN }} -state success -patch ${{ inputs.patch_name }} -target ${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.multilib }} -check 'Build GCC' -repo kevinl-rivosinc/gcc-ci
           echo "Associated run is: https://github.com/kevinl-rivosinc/gcc-ci/actions/runs/${{ github.run_id }}" >> issue.md
 
       - name: Zip build log
@@ -153,7 +153,7 @@ jobs:
       - name: Build failure report
         if: ${{ always() && steps.build-gcc.outcome == 'failure' }}
         run: |
-          python scripts/update_issue_status.py -token ${{ secrets.GITHUB_TOKEN }} -state 'Build failure. Please check the ${{ inputs.patch_name }}-build-log artifact' -patch ${{ inputs.patch_name }} -target ${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.multilib }} -check 'Build GCC'
+          python scripts/update_issue_status.py -token ${{ secrets.GITHUB_TOKEN }} -state 'Build failure. Please check the ${{ inputs.patch_name }}-build-log artifact' -patch ${{ inputs.patch_name }} -target ${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.multilib }} -check 'Build GCC' -repo kevinl-rivosinc/gcc-ci
           echo "Associated run is: https://github.com/kevinl-rivosinc/gcc-ci/actions/runs/${{ github.run_id }}" >> issue.md
 
       - name: Update build report issue
@@ -563,7 +563,7 @@ jobs:
 
       - name: Create pending issue
         run: |
-          python scripts/update_issue_status.py -token ${{ secrets.GITHUB_TOKEN }} -state pending -patch ${{ inputs.patch_name }} -target ${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.multilib }} -check 'Build GCC'
+          python scripts/update_issue_status.py -token ${{ secrets.GITHUB_TOKEN }} -state pending -patch ${{ inputs.patch_name }} -target ${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.multilib }} -check 'Build GCC' -repo kevinl-rivosinc/gcc-ci
           echo "Associated run is: https://github.com/kevinl-rivosinc/gcc-ci/actions/runs/${{ github.run_id }}" >> issue.md
 
       - name: Create apply report issue
@@ -600,7 +600,7 @@ jobs:
 
       - name: Build success report
         run: |
-          python scripts/update_issue_status.py -token ${{ secrets.GITHUB_TOKEN }} -state success -patch ${{ inputs.patch_name }} -target ${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.multilib }} -check 'Build GCC'
+          python scripts/update_issue_status.py -token ${{ secrets.GITHUB_TOKEN }} -state success -patch ${{ inputs.patch_name }} -target ${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.multilib }} -check 'Build GCC' -repo kevinl-rivosinc/gcc-ci
           echo "Associated run is: https://github.com/kevinl-rivosinc/gcc-ci/actions/runs/${{ github.run_id }}" >> issue.md
 
       - name: Zip build log
@@ -620,7 +620,7 @@ jobs:
       - name: Build failure report
         if: ${{ always() && steps.build-gcc.outcome == 'failure' }}
         run: |
-          python scripts/update_issue_status.py -token ${{ secrets.GITHUB_TOKEN }} -state 'Build failure. Please check the ${{ inputs.patch_name }}-build-log artifact' -patch ${{ inputs.patch_name }} -target ${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.multilib }} -check 'Build GCC'
+          python scripts/update_issue_status.py -token ${{ secrets.GITHUB_TOKEN }} -state 'Build failure. Please check the ${{ inputs.patch_name }}-build-log artifact' -patch ${{ inputs.patch_name }} -target ${{ inputs.mode }}-${{ inputs.target }}-${{ inputs.multilib }} -check 'Build GCC' -repo kevinl-rivosinc/gcc-ci
           echo "Associated run is: https://github.com/kevinl-rivosinc/gcc-ci/actions/runs/${{ github.run_id }}" >> issue.md
 
       - name: Create apply report issue
