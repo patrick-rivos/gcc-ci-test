@@ -1,0 +1,31 @@
+name: test gist
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    branches:
+      - main
+
+jobs:
+  compare-artifacts:
+    runs-on: ubuntu-20.04
+    environment: production
+    defaults:
+      run:
+        working-directory: riscv-gnu-toolchain
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup env
+        uses: ./.github/actions/common/setup-env
+        with:
+          free_up_space: false
+
+      - name: test gist step
+        run: |
+          touch test.log
+          echo "This is a test gist" >> test.log
+          python3 -m pip install pygithub requests pyopenssl --upgrade
+          python3 ./scripts/create_gist.py --token ${{ secrets.GITHUB_TOKEN }} --input test.log --output url.log
+          cat url.log
