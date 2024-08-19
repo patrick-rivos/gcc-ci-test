@@ -11,7 +11,6 @@ jobs:
   compare-artifacts:
     runs-on: ubuntu-20.04
     environment: production
-    permissions: write-all
     steps:
       - uses: actions/checkout@v4
 
@@ -25,5 +24,5 @@ jobs:
           touch test.log
           echo "This is a test gist" >> test.log
           python3 -m pip install pygithub requests pyopenssl --upgrade
-          python3 ./scripts/create_gist.py --token ${{ secrets.GITHUB_TOKEN }} --input test.log --output url.log
+          python3 ./scripts/create_gist.py --token ${{ secrets.GIST_TOKEN }} --input test.log --output url.log
           cat url.log
