@@ -12,8 +12,6 @@ jobs:
     runs-on: ubuntu-20.04
     environment: production
     defaults:
-      run:
-        working-directory: riscv-gnu-toolchain
     steps:
       - uses: actions/checkout@v4
 
@@ -23,6 +21,7 @@ jobs:
 
       - name: test gist step
         run: |
+          cd riscv-gnu-toolchain
           touch test.log
           echo "This is a test gist" >> test.log
           python3 -m pip install pygithub requests pyopenssl --upgrade
