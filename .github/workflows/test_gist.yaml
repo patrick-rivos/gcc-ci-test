@@ -18,9 +18,8 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup env
-        uses: ./.github/actions/common/setup-env
-        with:
-          free_up_space: false
+        run: |
+          git submodule update --init riscv-gnu-toolchain
 
       - name: test gist step
         run: |
